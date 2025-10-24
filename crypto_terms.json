@@ -1,0 +1,390 @@
+[
+  {
+    "term": "Blockchain",
+    "definition": "A decentralized digital ledger that records transactions across many computers in a secure, transparent way."
+  },
+  {
+    "term": "Bitcoin (BTC)",
+    "definition": "The first and largest cryptocurrency by market cap, created in 2009 by Satoshi Nakamoto."
+  },
+  {
+    "term": "Ethereum (ETH)",
+    "definition": "A blockchain platform that enables smart contracts and decentralized applications (dApps)."
+  },
+  {
+    "term": "Halving",
+    "definition": "An event in Bitcoin where the block reward for miners is cut in half, occurring approximately every 4 years."
+  },
+  {
+    "term": "DeFi",
+    "definition": "Decentralized Finance — financial services like lending, trading, and saving built on blockchains without banks."
+  },
+  {
+    "term": "Gas Fee",
+    "definition": "The fee paid to process transactions or execute smart contracts on Ethereum and other blockchains."
+  },
+  {
+    "term": "Wallet",
+    "definition": "A digital tool that stores your public and private keys to send, receive, and manage crypto assets."
+  },
+  {
+    "term": "FUD",
+    "definition": "Fear, Uncertainty, and Doubt — negative sentiment spread to manipulate markets or cause panic."
+  },
+  {
+    "term": "Whale",
+    "definition": "An individual or entity that holds a large amount of cryptocurrency and can influence market prices."
+  },
+  {
+    "term": "ATH",
+    "definition": "All-Time High — the highest price an asset has ever reached."
+  },
+  {
+    "term": "Altcoin",
+    "definition": "Any cryptocurrency other than Bitcoin (e.g., Ethereum, Solana, Dogecoin)."
+  },
+  {
+    "term": "Smart Contract",
+    "definition": "Self-executing code on a blockchain that runs when predefined conditions are met."
+  },
+  {
+    "term": "NFT",
+    "definition": "Non-Fungible Token — a unique digital asset representing ownership of art, collectibles, or real-world items."
+  },
+  {
+    "term": "Staking",
+    "definition": "Locking up crypto to support a blockchain network and earn rewards, common in Proof-of-Stake systems."
+  },
+  {
+    "term": "APY",
+    "definition": "Annual Percentage Yield — the real rate of return earned on staking or lending, including compounding."
+  },
+  {
+    "term": "Liquidity",
+    "definition": "How easily an asset can be bought or sold without affecting its price."
+  },
+  {
+    "term": "DEX",
+    "definition": "Decentralized Exchange — a platform to trade crypto directly from your wallet without a central authority."
+  },
+  {
+    "term": "CEX",
+    "definition": "Centralized Exchange — a traditional crypto exchange like Binance or Coinbase that holds your funds."
+  },
+  {
+    "term": "Private Key",
+    "definition": "A secret code that gives you access to your cryptocurrency. Never share it!"
+  },
+  {
+    "term": "Public Key",
+    "definition": "A cryptographic address derived from your private key; used to receive crypto."
+  },
+  {
+    "term": "Meme Coin",
+    "definition": "A cryptocurrency created as a joke or meme (e.g., Dogecoin, Shiba Inu), often highly volatile."
+  },
+  {
+    "term": "Layer 1",
+    "definition": "The base blockchain protocol (e.g., Bitcoin, Ethereum) that processes and finalizes transactions."
+  },
+  {
+    "term": "Layer 2",
+    "definition": "A scaling solution built on top of Layer 1 to increase speed and reduce fees (e.g., Arbitrum, Optimism)."
+  },
+  {
+    "term": "Rollup",
+    "definition": "A Layer 2 scaling solution that bundles multiple transactions off-chain and posts them to Layer 1."
+  },
+  {
+    "term": "DAO",
+    "definition": "Decentralized Autonomous Organization — a community-led entity governed by rules on a blockchain."
+  },
+  {
+    "term": "Airdrop",
+    "definition": "Free distribution of crypto tokens to wallet addresses, often to promote a new project."
+  },
+  {
+    "term": "Hard Fork",
+    "definition": "A radical change to a blockchain’s protocol that creates a permanent split into two chains."
+  },
+  {
+    "term": "Soft Fork",
+    "definition": "A backward-compatible upgrade to a blockchain that doesn’t split the network."
+  },
+  {
+    "term": "HODL",
+    "definition": "Slang for holding crypto long-term despite market volatility (originally a typo of 'hold')."
+  },
+  {
+    "term": "DYOR",
+    "definition": "Do Your Own Research — a reminder to verify information before investing."
+  },
+  {
+    "term": "Bull Market",
+    "definition": "A market condition where prices are rising or expected to rise."
+  },
+  {
+    "term": "Bear Market",
+    "definition": "A market condition where prices are falling or expected to fall."
+  },
+  {
+    "term": "FOMO",
+    "definition": "Fear Of Missing Out — the anxiety that drives people to buy during price surges."
+  },
+  {
+    "term": "Rekt",
+    "definition": "Slang for being severely financially damaged in a trade or investment."
+  },
+  {
+    "term": "To the Moon",
+    "definition": "A phrase expressing belief that a crypto’s price will skyrocket."
+  },
+  {
+    "term": "Gasless Transaction",
+    "definition": "A transaction where fees are paid by a third party or deferred, common in some dApps."
+  },
+  {
+    "term": "Bridge",
+    "definition": "A protocol that moves assets between different blockchains (e.g., from Ethereum to Polygon)."
+  },
+  {
+    "term": "Oracles",
+    "definition": "Services that provide real-world data (like price feeds) to smart contracts on blockchains."
+  },
+  {
+    "term": "Impermanent Loss",
+    "definition": "A temporary loss experienced by liquidity providers when asset prices change in a pool."
+  },
+  {
+    "term": "TVL",
+    "definition": "Total Value Locked — the amount of crypto deposited in a DeFi protocol."
+  },
+  {
+    "term": "Rug Pull",
+    "definition": "A scam where developers abandon a project and steal investors’ funds."
+  },
+  {
+    "term": "KYC",
+    "definition": "Know Your Customer — identity verification required by centralized exchanges."
+  },
+  {
+    "term": "Self-Custody",
+    "definition": "Holding your own private keys and controlling your crypto, not relying on exchanges."
+  },
+  {
+    "term": "Cold Wallet",
+    "definition": "A hardware or paper wallet not connected to the internet, used for secure storage."
+  },
+  {
+    "term": "Hot Wallet",
+    "definition": "A software wallet connected to the internet, convenient but less secure."
+  },
+  {
+    "term": "Stablecoin",
+    "definition": "A cryptocurrency pegged to a stable asset like the US dollar (e.g., USDT, USDC)."
+  },
+  {
+    "term": "Overcollateralization",
+    "definition": "Depositing more value than you borrow in DeFi to reduce risk of liquidation."
+  },
+  {
+    "term": "Liquidation",
+    "definition": "When a DeFi loan is automatically closed because collateral value dropped too low."
+  },
+  {
+    "term": "Yield Farming",
+    "definition": "Providing liquidity to DeFi protocols to earn rewards in the form of tokens."
+  },
+  {
+    "term": "Slippage",
+    "definition": "The difference between expected and actual price when executing a trade, common in volatile markets."
+  },
+  {
+    "term": "MEV",
+    "definition": "Maximal Extractable Value — profit miners or validators can make by reordering transactions."
+  },
+  {
+    "term": "ZK-Rollup",
+    "definition": "A Layer 2 scaling solution that uses zero-knowledge proofs to validate transactions off-chain."
+  },
+  {
+    "term": "zk-SNARKs",
+    "definition": "A cryptographic method that proves a statement is true without revealing the underlying data."
+  },
+  {
+    "term": "Web3",
+    "definition": "The vision of a decentralized internet built on blockchain technology and user ownership."
+  },
+  {
+    "term": "Metaverse",
+    "definition": "A virtual world where users interact via avatars, often using NFTs and crypto for transactions."
+  },
+  {
+    "term": "Tokenomics",
+    "definition": "The economic model of a cryptocurrency, including supply, distribution, and utility."
+  },
+  {
+    "term": "Circulating Supply",
+    "definition": "The number of coins currently available and trading in the market."
+  },
+  {
+    "term": "Market Cap",
+    "definition": "Total value of a cryptocurrency, calculated as price × circulating supply."
+  },
+  {
+    "term": "Pump and Dump",
+    "definition": "A scheme where a group inflates a coin’s price (pump) then sells off (dump), crashing the price."
+  },
+  {
+    "term": "Shill",
+    "definition": "To aggressively promote a crypto, often without disclosing ownership."
+  },
+  {
+    "term": "Bagholder",
+    "definition": "Someone holding a cryptocurrency that has lost significant value."
+  },
+  {
+    "term": "Gas War",
+    "definition": "When users compete by raising gas fees to get their transactions processed first."
+  },
+  {
+    "term": "EIP",
+    "definition": "Ethereum Improvement Proposal — a design document for new features or changes to Ethereum."
+  },
+  {
+    "term": "Consensus Mechanism",
+    "definition": "The method a blockchain uses to agree on the state of the network (e.g., Proof-of-Work, Proof-of-Stake)."
+  },
+  {
+    "term": "Proof-of-Work (PoW)",
+    "definition": "A consensus mechanism where miners solve complex puzzles to validate blocks (used by Bitcoin)."
+  },
+  {
+    "term": "Proof-of-Stake (PoS)",
+    "definition": "A consensus mechanism where validators are chosen based on the amount of crypto they stake."
+  },
+  {
+    "term": "Validator",
+    "definition": "A participant in a PoS network who proposes and validates blocks in exchange for rewards."
+  },
+  {
+    "term": "Node",
+    "definition": "A computer that connects to a blockchain network and helps maintain it by storing and validating data."
+  },
+  {
+    "term": "Full Node",
+    "definition": "A node that stores the entire blockchain history and validates all transactions independently."
+  },
+  {
+    "term": "Light Node",
+    "definition": "A node that relies on full nodes for data, using less storage and bandwidth."
+  },
+  {
+    "term": "Mainnet",
+    "definition": "The live, primary blockchain network where real transactions occur (vs. testnet)."
+  },
+  {
+    "term": "Testnet",
+    "definition": "A sandbox version of a blockchain used by developers to test apps without real money."
+  },
+  {
+    "term": "Whitepaper",
+    "definition": "A technical document that explains a crypto project’s purpose, technology, and roadmap."
+  },
+  {
+    "term": "Roadmap",
+    "definition": "A project’s planned timeline of features, upgrades, and milestones."
+  },
+  {
+    "term": "Burn",
+    "definition": "Permanently removing tokens from circulation to reduce supply and potentially increase value."
+  },
+  {
+    "term": "Mint",
+    "definition": "Creating new tokens or NFTs on a blockchain."
+  },
+  {
+    "term": "Liquidity Pool",
+    "definition": "A reserve of tokens locked in a smart contract to facilitate trading on a DEX."
+  },
+  {
+    "term": "AMM",
+    "definition": "Automated Market Maker — a DEX protocol that uses algorithms and liquidity pools instead of order books."
+  },
+  {
+    "term": "Immutability",
+    "definition": "The property of blockchain data that cannot be altered or deleted once recorded."
+  },
+  {
+    "term": "Interoperability",
+    "definition": "The ability of different blockchains to communicate and share data seamlessly."
+  },
+  {
+    "term": "Gas Token",
+    "definition": "A token used to pay for transaction fees on a specific blockchain (e.g., ETH on Ethereum)."
+  },
+  {
+    "term": "Wrapped Token",
+    "definition": "A tokenized version of a crypto from another blockchain (e.g., WBTC = Bitcoin on Ethereum)."
+  },
+  {
+    "term": "Rebase Token",
+    "definition": "A token whose supply automatically adjusts to maintain a target price."
+  },
+  {
+    "term": "Flash Loan",
+    "definition": "A DeFi loan that is borrowed and repaid in a single transaction, with no collateral required."
+  },
+  {
+    "term": "Front Running",
+    "definition": "When a trader sees a pending transaction and places their own to profit from the price movement."
+  },
+  {
+    "term": "Sybil Attack",
+    "definition": "An attack where one entity creates multiple fake identities to gain influence over a network."
+  },
+  {
+    "term": "51% Attack",
+    "definition": "When a single entity controls more than half of a blockchain’s mining power, allowing them to manipulate it."
+  },
+  {
+    "term": "Privacy Coin",
+    "definition": "A cryptocurrency designed to obscure transaction details (e.g., Monero, Zcash)."
+  },
+  {
+    "term": "Cross-Chain",
+    "definition": "Technology that enables interaction between different blockchain networks."
+  },
+  {
+    "term": "On-Chain",
+    "definition": "Data or activity that is recorded directly on a blockchain and publicly verifiable."
+  },
+  {
+    "term": "Off-Chain",
+    "definition": "Activity that happens outside the blockchain but may later be recorded on it."
+  },
+  {
+    "term": "Governance Token",
+    "definition": "A token that gives holders voting rights on a protocol’s future development."
+  },
+  {
+    "term": "Utility Token",
+    "definition": "A token that provides access to a product or service within a blockchain ecosystem."
+  },
+  {
+    "term": "Security Token",
+    "definition": "A token that represents ownership in an asset (like shares) and is regulated as a security."
+  },
+  {
+    "term": "Token Standard",
+    "definition": "A set of rules for creating tokens on a blockchain (e.g., ERC-20 for Ethereum fungible tokens)."
+  },
+  {
+    "term": "ERC-721",
+    "definition": "An Ethereum standard for non-fungible tokens (NFTs)."
+  },
+  {
+    "term": "ERC-1155",
+    "definition": "An Ethereum standard that supports both fungible and non-fungible tokens in one contract."
+  }
+]
