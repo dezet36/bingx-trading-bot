@@ -241,7 +241,7 @@ def repost_trusted_content():
     try:
         tweets = client.search_recent_tweets(query=query, max_results=20)
         if not tweets or not tweets.data: return
-        for tweet in tweets.
+        for tweet in tweets.data:
             if tweet.id in processed_trusted_tweets or "RT @" in tweet.text or len(tweet.text) < 30: continue
             try:
                 client.retweet(tweet.id)
