@@ -54,9 +54,9 @@ RSS_FEEDS = [
     "https://blockworks.co/news/feed/",
     "https://glassnode.com/feed.xml",
     "https://santiment.net/blog/feed/",
-    "https://ethereum.org/en/rss/blog.xml",
-    "https://blog.chain.link/rss.xml",
-    "https://polygon.technology/blog/rss.xml",
+    # Убираем: "https://ethereum.org/en/rss/blog.xml", (может быть 403)
+    # Убираем: "https://blog.chain.link/rss.xml", (403)
+    # Убираем: "https://polygon.technology/blog/rss.xml", (404)
     "https://nftnow.com/feed/",
     "https://nftevening.com/feed/",
     "https://www.coindesk.com/policy/feed/"
