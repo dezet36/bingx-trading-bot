@@ -7,8 +7,6 @@ import tweepy
 import google.generativeai as genai
 import requests
 from dotenv import load_dotenv
-from transformers import pipeline
-from xml.etree import ElementTree as ET
 
 load_dotenv()
 
@@ -43,15 +41,7 @@ if use_gemini:
 else:
     print("⚠️ No GEMINI_API_KEY")
 
-# === Sentiment Model ===
-print("🧠 Loading sentiment model...")
-sentiment_model = pipeline(
-    "sentiment-analysis",
-    model="cardiffnlp/twitter-roberta-base-sentiment-latest",
-    tokenizer="cardiffnlp/twitter-roberta-base-sentiment-latest"
-)
-
-# === RSS FEEDS (без feedparser) ===
+# === RSS FEEDS ===
 RSS_FEEDS = [
     "https://www.coindesk.com/arc/outboundfeeds/rss/",
     "https://cointelegraph.com/rss",
@@ -80,17 +70,15 @@ processed_mentions = set()
 processed_trusted_tweets = set()
 
 # ======================
-# НОВАЯ ФУНКЦИЯ: ПАРСИНГ RSS БЕЗ FEEDPARSER
+# ПАРСИНГ RSS БЕЗ FEEDPARSER
 # ======================
 
 def parse_rss_feed(url):
-    """Парсит RSS-ленту вручную с помощью xml.etree.ElementTree"""
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
+        from xml.etree import ElementTree as ET
         root = ET.fromstring(response.content)
-        
-        # Найдём все элементы <item>
         items = []
         for item in root.findall(".//item"):
             title_elem = item.find("title")
@@ -98,7 +86,6 @@ def parse_rss_feed(url):
             title = title_elem.text.strip() if title_elem is not None and title_elem.text else "No title"
             link = link_elem.text.strip() if link_elem is not None and link_elem.text else "https://cointelegraph.com"
             items.append({"title": title, "link": link})
-        
         return items
     except Exception as e:
         print(f"⚠️ RSS parse error for {url}: {e}")
@@ -113,7 +100,15 @@ def get_latest_crypto_news():
     return "Stay updated on crypto markets", "https://cointelegraph.com"
 
 # ======================
-# ОСТАЛЬНЫЕ ФУНКЦИИ (БЕЗ ИЗМЕНЕНИЙ)
+# ЗАГЛУШКА ДЛЯ АНАЛИЗА НАСТРОЕНИЙ (БЕЗ PYTORCH)
+# ======================
+
+def analyze_sentiment(kw="#bitcoin", cnt=15):
+    # Просто возвращаем случайное настроение без ML
+    return random.choice(["bullish 🟢", "bearish 🔴", "neutral ⚪"])
+
+# ======================
+# ОСТАЛЬНОЙ КОД БЕЗ ИЗМЕНЕНИЙ
 # ======================
 
 def load_crypto_terms():
@@ -143,30 +138,12 @@ def summarize_news(title, url):
         return s[:117] + "..." if len(s) > 120 else s
     except: return title[:100]
 
-def analyze_sentiment(kw="#bitcoin", cnt=15):
-    try:
-        tweets = client.search_recent_tweets(query=kw + " -is:retweet lang:en", max_results=min(cnt, 100))
-        if not tweets or not tweets.data:
-            return "neutral ⚪"
-        pos = neg = 0
-        for t in [tw.text for tw in tweets.data][:10]:
-            lbl = sentiment_model(t[:512])[0]['label']
-            if lbl == 'LABEL_2': pos += 1
-            elif lbl == 'LABEL_0': neg += 1
-        return "bullish 🟢" if pos > neg else "bearish 🔴" if neg > pos else "neutral ⚪"
-    except: return "unknown ❓"
-
-# ======================
-# ГЛАВНАЯ ФУНКЦИЯ ОТВЕТОВ (DERZKY TRADER MODE)
-# ======================
-
 def generate_reply(text, username, author_id):
     text_lower = text.lower()
     include_ref = random.random() < 0.3
     ref = os.getenv("REFERRAL_LINK", "https://www.bingx.com") if include_ref else ""
     ref_suffix = f" → {ref}" if ref else ""
 
-    # === НЕГАТИВ ===
     negative_keywords = ["lost", "scam", "rip", "angry", "hate", "bad signal", "wrong", "dumped", "rekt", "sucks", "fuck", "wtf"]
     if any(kw in text_lower for kw in negative_keywords):
         replies = [
@@ -179,7 +156,6 @@ def generate_reply(text, username, author_id):
         reply = random.choice(replies) + ref_suffix
         return reply if len(reply) <= 280 else reply[:277] + "..."
 
-    # === БЛАГОДАРНОСТИ ===
     if any(kw in text_lower for kw in ["thank", "thx", "gracias", "cheers", "appreciate", "nice", "good call"]):
         replies = [
             "You’re welcome. Now go compound that PnL.",
@@ -191,7 +167,6 @@ def generate_reply(text, username, author_id):
         reply = random.choice(replies) + ref_suffix
         return reply if len(reply) <= 280 else reply[:277] + "..."
 
-    # === ЗАПРОС ЦЕНЫ ===
     if should_reply_with_price(text):
         prices = get_crypto_prices()
         replies = [
@@ -204,7 +179,6 @@ def generate_reply(text, username, author_id):
         reply = random.choice(replies) + ref_suffix
         return reply if len(reply) <= 280 else reply[:277] + "..."
 
-    # === НОВИЧКИ ===
     beginner_keywords = ["how to start", "beginner", "new", "first time", "guide", "help", "where to buy"]
     if any(kw in text_lower for kw in beginner_keywords):
         replies = [
@@ -217,7 +191,6 @@ def generate_reply(text, username, author_id):
         reply = random.choice(replies) + ref_suffix
         return reply if len(reply) <= 280 else reply[:277] + "..."
 
-    # === ОБЩИЕ УПОМИНАНИЯ ===
     general_replies = [
         "You’re either here to trade or watch others get rich. Which one?",
         "Scrolling charts or executing setups? Choose fast.",
@@ -245,7 +218,7 @@ def generate_reply(text, username, author_id):
     return final_reply
 
 # ======================
-# ОСНОВНЫЕ ФУНКЦИИ ПУБЛИКАЦИИ
+# ФУНКЦИИ ПУБЛИКАЦИИ
 # ======================
 
 def post_crypto_term():
@@ -332,7 +305,7 @@ def post_analytical_tweet():
 # ======================
 
 if __name__ == "__main__":
-    print("🚀 Starting BingX Trading Bot (Python 3.13 Compatible)...")
+    print("🚀 Starting BingX Trading Bot (Stable Edition)...")
     post_analytical_tweet()
     schedule.every(3).hours.do(post_analytical_tweet)
     schedule.every().day.at("09:00").do(post_thread)
