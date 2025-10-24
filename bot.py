@@ -54,9 +54,6 @@ RSS_FEEDS = [
     "https://blockworks.co/news/feed/",
     "https://glassnode.com/feed.xml",
     "https://santiment.net/blog/feed/",
-    # Убираем: "https://ethereum.org/en/rss/blog.xml", (может быть 403)
-    # Убираем: "https://blog.chain.link/rss.xml", (403)
-    # Убираем: "https://polygon.technology/blog/rss.xml", (404)
     "https://nftnow.com/feed/",
     "https://nftevening.com/feed/",
     "https://www.coindesk.com/policy/feed/"
@@ -92,11 +89,15 @@ def parse_rss_feed(url):
         return []
 
 def get_latest_crypto_news():
+    print("🔍 Trying to get news...")
     random.shuffle(RSS_FEEDS)
     for url in RSS_FEEDS:
+        print(f"📡 Parsing {url}...")
         items = parse_rss_feed(url)
         if items:
+            print(f"✅ Got news: {items[0]['title']}")
             return items[0]["title"], items[0]["link"]
+    print("❌ No news found, using fallback")
     return "Stay updated on crypto markets", "https://cointelegraph.com"
 
 # ======================
