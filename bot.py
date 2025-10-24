@@ -287,7 +287,7 @@ def engage_with_mentions():
     global processed_mentions
     try:
         mentions = client.get_users_mentions(id=bot_id, max_results=20)
-        if not mentions or not mentions. return
+        if not mentions or not mentions.data: return
         for mention in reversed(mentions.data):
             if mention.id in processed_mentions or mention.author_id == bot_id: continue
             try:
