@@ -2,16 +2,15 @@ import os
 import time
 import random
 import json
-import feedparser
 import schedule
 import tweepy
 import google.generativeai as genai
 import requests
 from dotenv import load_dotenv
 from transformers import pipeline
+from xml.etree import ElementTree as ET
 
 load_dotenv()
-feedparser.USER_AGENT = "CryptoAIBot/1.0"
 
 # === Twitter API ===
 client = tweepy.Client(
@@ -52,7 +51,7 @@ sentiment_model = pipeline(
     tokenizer="cardiffnlp/twitter-roberta-base-sentiment-latest"
 )
 
-# === RSS FEEDS ===
+# === RSS FEEDS (без feedparser) ===
 RSS_FEEDS = [
     "https://www.coindesk.com/arc/outboundfeeds/rss/",
     "https://cointelegraph.com/rss",
@@ -81,7 +80,40 @@ processed_mentions = set()
 processed_trusted_tweets = set()
 
 # ======================
-# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+# НОВАЯ ФУНКЦИЯ: ПАРСИНГ RSS БЕЗ FEEDPARSER
+# ======================
+
+def parse_rss_feed(url):
+    """Парсит RSS-ленту вручную с помощью xml.etree.ElementTree"""
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        root = ET.fromstring(response.content)
+        
+        # Найдём все элементы <item>
+        items = []
+        for item in root.findall(".//item"):
+            title_elem = item.find("title")
+            link_elem = item.find("link")
+            title = title_elem.text.strip() if title_elem is not None and title_elem.text else "No title"
+            link = link_elem.text.strip() if link_elem is not None and link_elem.text else "https://cointelegraph.com"
+            items.append({"title": title, "link": link})
+        
+        return items
+    except Exception as e:
+        print(f"⚠️ RSS parse error for {url}: {e}")
+        return []
+
+def get_latest_crypto_news():
+    random.shuffle(RSS_FEEDS)
+    for url in RSS_FEEDS:
+        items = parse_rss_feed(url)
+        if items:
+            return items[0]["title"], items[0]["link"]
+    return "Stay updated on crypto markets", "https://cointelegraph.com"
+
+# ======================
+# ОСТАЛЬНЫЕ ФУНКЦИИ (БЕЗ ИЗМЕНЕНИЙ)
 # ======================
 
 def load_crypto_terms():
@@ -102,17 +134,6 @@ def get_crypto_prices():
 def should_reply_with_price(text):
     return any(kw in text.lower() for kw in ["price", "btc", "eth", "bitcoin", "ethereum"])
 
-def get_latest_crypto_news():
-    random.shuffle(RSS_FEEDS)
-    for url in RSS_FEEDS:
-        try:
-            feed = feedparser.parse(url)
-            if feed.entries:
-                e = feed.entries[0]
-                return e.get("title", "Market update").strip(), e.get("link", "https://cointelegraph.com")
-        except: pass
-    return "Stay updated", "https://cointelegraph.com"
-
 def summarize_news(title, url):
     if not use_gemini: return f"{title[:100]}..." if len(title) > 100 else title
     prompt = f"Pro crypto analyst. Summarize in one tweet (max 120 chars): '{title}'. Source: {url}"
@@ -125,7 +146,7 @@ def summarize_news(title, url):
 def analyze_sentiment(kw="#bitcoin", cnt=15):
     try:
         tweets = client.search_recent_tweets(query=kw + " -is:retweet lang:en", max_results=min(cnt, 100))
-        if not tweets or not tweets.
+        if not tweets or not tweets.data:
             return "neutral ⚪"
         pos = neg = 0
         for t in [tw.text for tw in tweets.data][:10]:
@@ -241,8 +262,8 @@ def repost_trusted_content():
     query = f"({media_part}) OR ({people_part}) (bitcoin OR ethereum OR crypto OR halving OR ETF OR defi OR market)"
     try:
         tweets = client.search_recent_tweets(query=query, max_results=20)
-        if not tweets or not tweets. return
-        for tweet in tweets.
+        if not tweets or not tweets.data: return
+        for tweet in tweets.data:
             if tweet.id in processed_trusted_tweets or "RT @" in tweet.text or len(tweet.text) < 30: continue
             try: client.retweet(tweet.id); processed_trusted_tweets.add(tweet.id); time.sleep(2)
             except: processed_trusted_tweets.add(tweet.id)
@@ -279,7 +300,7 @@ def engage_with_mentions():
     global processed_mentions
     try:
         mentions = client.get_users_mentions(id=bot_id, max_results=20)
-        if not mentions or not mentions. return
+        if not mentions or not mentions.data: return
         for mention in reversed(mentions.data):
             if mention.id in processed_mentions or mention.author_id == bot_id: continue
             try:
@@ -311,7 +332,7 @@ def post_analytical_tweet():
 # ======================
 
 if __name__ == "__main__":
-    print("🚀 Starting BingX Trading Bot (Python 3.11 Compatible)...")
+    print("🚀 Starting BingX Trading Bot (Python 3.13 Compatible)...")
     post_analytical_tweet()
     schedule.every(3).hours.do(post_analytical_tweet)
     schedule.every().day.at("09:00").do(post_thread)
