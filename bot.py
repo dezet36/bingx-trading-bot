@@ -125,7 +125,7 @@ def summarize_news(title, url):
 def analyze_sentiment(kw="#bitcoin", cnt=15):
     try:
         tweets = client.search_recent_tweets(query=kw + " -is:retweet lang:en", max_results=min(cnt, 100))
-        if not tweets or not tweets.
+        if not tweets or not tweets.data:
             return "neutral ⚪"
         pos = neg = 0
         for t in [tw.text for tw in tweets.data][:10]:
@@ -242,7 +242,7 @@ def repost_trusted_content():
     try:
         tweets = client.search_recent_tweets(query=query, max_results=20)
         if not tweets or not tweets.data: return
-        for tweet in tweets.
+        for tweet in tweets.data:
             if tweet.id in processed_trusted_tweets or "RT @" in tweet.text or len(tweet.text) < 30: continue
             try: client.retweet(tweet.id); processed_trusted_tweets.add(tweet.id); time.sleep(2)
             except: processed_trusted_tweets.add(tweet.id)
@@ -279,7 +279,7 @@ def engage_with_mentions():
     global processed_mentions
     try:
         mentions = client.get_users_mentions(id=bot_id, max_results=20)
-        if not mentions or not mentions. return
+        if not mentions or not mentions.data: return
         for mention in reversed(mentions.data):
             if mention.id in processed_mentions or mention.author_id == bot_id: continue
             try:
