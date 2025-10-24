@@ -41,7 +41,7 @@ if use_gemini:
 else:
     print("⚠️ No GEMINI_API_KEY")
 
-# === RSS FEEDS ===
+# === RSS FEEDS (без 403/404) ===
 RSS_FEEDS = [
     "https://www.coindesk.com/arc/outboundfeeds/rss/",
     "https://cointelegraph.com/rss",
@@ -109,7 +109,7 @@ def analyze_sentiment(kw="#bitcoin", cnt=15):
     return random.choice(["bullish 🟢", "bearish 🔴", "neutral ⚪"])
 
 # ======================
-# ОСТАЛЬНОЙ КОД БЕЗ ИЗМЕНЕНИЙ
+# ОСТАЛЬНЫЕ ФУНКЦИИ
 # ======================
 
 def load_crypto_terms():
@@ -218,8 +218,11 @@ def generate_reply(text, username, author_id):
 
     return final_reply
 
+def should_retweet(text):
+    return any(kw in text.lower() for kw in ["thank", "useful", "great", "accurate"])
+
 # ======================
-# ФУНКЦИИ ПУБЛИКАЦИИ
+# ФУНКЦИИ ПУБЛИКАЦИИ (с обработкой лимитов)
 # ======================
 
 def post_crypto_term():
@@ -228,7 +231,8 @@ def post_crypto_term():
     tweet = f"📚 Crypto Term of the Day:\n\n**{term_data['term']}** — {term_data['definition']}\n\nStart trading on BingX with bonus 👉 {os.getenv('REFERRAL_LINK', 'https://www.bingx.com')}"
     if len(tweet) > 280: tweet = tweet[:277] + "..."
     try: client.create_tweet(text=tweet); print("📖 Term posted")
-    except: pass
+    except tweepy.TooManyRequests: print("⚠️ Rate limit on term post. Skipping.")
+    except Exception as e: print(f"❌ Term error: {e}")
 
 def repost_trusted_content():
     media_part = " OR ".join([f"from:{acc}" for acc in MEDIA_ACCOUNTS])
@@ -236,12 +240,23 @@ def repost_trusted_content():
     query = f"({media_part}) OR ({people_part}) (bitcoin OR ethereum OR crypto OR halving OR ETF OR defi OR market)"
     try:
         tweets = client.search_recent_tweets(query=query, max_results=20)
-        if not tweets or not tweets.data: return
-        for tweet in tweets.data:
+        if not tweets or not tweets. return
+        for tweet in tweets.
             if tweet.id in processed_trusted_tweets or "RT @" in tweet.text or len(tweet.text) < 30: continue
-            try: client.retweet(tweet.id); processed_trusted_tweets.add(tweet.id); time.sleep(2)
-            except: processed_trusted_tweets.add(tweet.id)
-    except: pass
+            try:
+                client.retweet(tweet.id)
+                print(f"🔁 Reposted: {tweet.text[:50]}...")
+                processed_trusted_tweets.add(tweet.id)
+            except tweepy.TooManyRequests:
+                print("⚠️ Rate limit on repost. Skipping.")
+                break
+            except Exception as e:
+                print(f"⚠️ Repost error: {e}")
+                processed_trusted_tweets.add(tweet.id)
+    except tweepy.TooManyRequests:
+        print("⚠️ Rate limit on trusted content search. Skipping.")
+    except Exception as e:
+        print(f"❌ Repost error: {e}")
 
 def generate_daily_thread():
     if not use_gemini: return None
@@ -265,16 +280,14 @@ def post_thread():
             cid = reply.data["id"]
             time.sleep(2)
         print("✅ Thread posted")
-    except: pass
-
-def should_retweet(text):
-    return any(kw in text.lower() for kw in ["thank", "useful", "great", "accurate"])
+    except tweepy.TooManyRequests: print("⚠️ Rate limit on thread post. Skipping.")
+    except Exception as e: print(f"❌ Thread error: {e}")
 
 def engage_with_mentions():
     global processed_mentions
     try:
         mentions = client.get_users_mentions(id=bot_id, max_results=20)
-        if not mentions or not mentions.data: return
+        if not mentions or not mentions. return
         for mention in reversed(mentions.data):
             if mention.id in processed_mentions or mention.author_id == bot_id: continue
             try:
@@ -284,10 +297,16 @@ def engage_with_mentions():
                 reply_text = generate_reply(mention.text, author.data.username, mention.author_id)
                 client.create_tweet(text=reply_text, in_reply_to_tweet_id=mention.id)
                 print(f"💬 Replied to @{author.data.username}")
-            except: pass
+            except tweepy.TooManyRequests:
+                print("⚠️ Rate limit on mention reply. Skipping.")
+                break
+            except Exception as e:
+                print(f"⚠️ Reply error: {e}")
             processed_mentions.add(mention.id)
-            time.sleep(3)
-    except: pass
+    except tweepy.TooManyRequests:
+        print("⚠️ Rate limit on mentions fetch. Skipping.")
+    except Exception as e:
+        print(f"❌ Mention error: {e}")
 
 def post_analytical_tweet():
     try:
@@ -299,7 +318,10 @@ def post_analytical_tweet():
         if len(tweet) > 280: tweet = tweet[:277] + "..."
         client.create_tweet(text=tweet)
         print("✅ Analytical tweet posted")
-    except: pass
+    except tweepy.TooManyRequests:
+        print("⚠️ Rate limit exceeded. Skipping tweet for now.")
+    except Exception as e:
+        print(f"❌ Tweet error: {e}")
 
 # ======================
 # ЗАПУСК
