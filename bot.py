@@ -22,7 +22,7 @@ client = tweepy.Client(
 # 🔒 Защита от 401 Unauthorized
 try:
     me = client.get_me()
-    if not me or not me.
+    if not me or not me.data:
         raise Exception("Не удалось получить данные аккаунта. Проверь ключи и разрешения в X Developer Portal.")
     bot_id = me.data.id
     print(f"🤖 Bot ID: {bot_id}")
