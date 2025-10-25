@@ -240,8 +240,8 @@ def repost_trusted_content():
     query = f"({media_part}) OR ({people_part}) (bitcoin OR ethereum OR crypto OR halving OR ETF OR defi OR market)"
     try:
         tweets = client.search_recent_tweets(query=query, max_results=20)
-        if not tweets or not tweets.data: return
-        for tweet in tweets.data:
+        if not tweets or not tweets. return
+        for tweet in tweets.
             if tweet.id in processed_trusted_tweets or "RT @" in tweet.text or len(tweet.text) < 30: continue
             try:
                 client.retweet(tweet.id)
@@ -287,7 +287,7 @@ def engage_with_mentions():
     global processed_mentions
     try:
         mentions = client.get_users_mentions(id=bot_id, max_results=20)
-        if not mentions or not mentions.data: return
+        if not mentions or not mentions. return
         for mention in reversed(mentions.data):
             if mention.id in processed_mentions or mention.author_id == bot_id: continue
             try:
@@ -309,6 +309,7 @@ def engage_with_mentions():
         print(f"❌ Mention error: {e}")
 
 def post_analytical_tweet():
+    print("🔄 post_analytical_tweet() called")
     try:
         title, url = get_latest_crypto_news()
         sentiment = analyze_sentiment()
@@ -316,6 +317,7 @@ def post_analytical_tweet():
         ref = os.getenv("REFERRAL_LINK", "https://www.bingx.com")
         tweet = f"🤖 AI Crypto Pulse\n\nMarket sentiment: {sentiment}\n📰 {summary}\n{url}\n\nStart trading on BingX with bonus 👉 {ref}"
         if len(tweet) > 280: tweet = tweet[:277] + "..."
+        print(f"📤 Tweet content: {tweet[:100]}...")  # первые 100 символов
         client.create_tweet(text=tweet)
         print("✅ Analytical tweet posted")
     except tweepy.TooManyRequests:
@@ -329,7 +331,9 @@ def post_analytical_tweet():
 
 if __name__ == "__main__":
     print("🚀 Starting BingX Trading Bot (Stable Edition)...")
-    post_analytical_tweet()
+    print("🔄 Running first tweet...")
+    post_analytical_tweet()  # первая публикация сразу
+    print("🔄 Setting up schedule...")
     schedule.every(3).hours.do(post_analytical_tweet)
     schedule.every().day.at("09:00").do(post_thread)
     schedule.every().day.at("14:00").do(post_crypto_term)
@@ -337,5 +341,6 @@ if __name__ == "__main__":
     schedule.every(5).minutes.do(engage_with_mentions)
 
     while True:
+        print("⏰ Running scheduled tasks...")
         schedule.run_pending()
         time.sleep(30)
