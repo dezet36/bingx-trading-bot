@@ -22,7 +22,7 @@ client = tweepy.Client(
 # 🔒 Защита от 401 Unauthorized
 try:
     me = client.get_me()
-    if not me or not me.data:
+    if not me or not me.
         raise Exception("Не удалось получить данные аккаунта. Проверь ключи и разрешения в X Developer Portal.")
     bot_id = me.data.id
     print(f"🤖 Bot ID: {bot_id}")
@@ -232,9 +232,11 @@ def repost_trusted_content():
     query = f"({media_part}) OR ({people_part}) (bitcoin OR ethereum OR crypto OR halving OR ETF OR defi OR market)"
     try:
         tweets = client.search_recent_tweets(query=query, max_results=10)
-        if not tweets or not tweets.: return
-        for tweet in tweets.:
-            if tweet.id in processed_trusted_tweets or "RT @" in tweet.text or len(tweet.text) < 30: continue
+        if not tweets or not tweets.
+            return
+        for tweet in tweets.
+            if tweet.id in processed_trusted_tweets or "RT @" in tweet.text or len(tweet.text) < 30:
+                continue
             try:
                 client.retweet(tweet.id)
                 print(f"🔁 Reposted: {tweet.text[:50]}...")
@@ -263,13 +265,16 @@ def post_analytical_tweet():
 def engage_with_mentions():
     global processed_mentions
     try:
-        mentions = client.get_users_mentions(id=bot_id, max_results=5)  # ← уменьшено с 20 до 5
-        if not mentions or not mentions.: return
+        mentions = client.get_users_mentions(id=bot_id, max_results=5)
+        if not mentions or not mentions.
+            return
         for mention in reversed(mentions.data):
-            if mention.id in processed_mentions or mention.author_id == bot_id: continue
+            if mention.id in processed_mentions or mention.author_id == bot_id:
+                continue
             try:
                 client.like(mention.id)
-                if should_retweet(mention.text): client.retweet(mention.id)
+                if should_retweet(mention.text):
+                    client.retweet(mention.id)
                 author = client.get_user(id=mention.author_id)
                 reply_text = generate_reply(mention.text, author.data.username, mention.author_id)
                 client.create_tweet(text=reply_text, in_reply_to_tweet_id=mention.id)
@@ -293,8 +298,8 @@ if __name__ == "__main__":
     # Уменьшены частоты, чтобы избежать rate limit
     schedule.every(4).hours.do(post_analytical_tweet)
     schedule.every().day.at("10:00").do(post_crypto_term)
-    schedule.every(2).hours.do(repost_trusted_content)   # ← было 30 минут
-    schedule.every(30).minutes.do(engage_with_mentions)  # ← было 5 минут
+    schedule.every(2).hours.do(repost_trusted_content)
+    schedule.every(30).minutes.do(engage_with_mentions)
 
     while True:
         schedule.run_pending()
