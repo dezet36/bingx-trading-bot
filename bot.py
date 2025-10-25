@@ -298,8 +298,8 @@ if __name__ == "__main__":
     # Уменьшены частоты, чтобы избежать rate limit
     schedule.every(4).hours.do(post_analytical_tweet)
     schedule.every().day.at("10:00").do(post_crypto_term)
-    schedule.every(2).hours.do(repost_trusted_content)
-    schedule.every(30).minutes.do(engage_with_mentions)
+    schedule.every(2).hours.do(repost_trusted_content)   # ← было 30 минут
+    schedule.every(30).minutes.do(engage_with_mentions)  # ← было 5 минут
 
     while True:
         schedule.run_pending()
