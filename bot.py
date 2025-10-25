@@ -22,7 +22,7 @@ client = tweepy.Client(
 # 🔒 Защита от 401 Unauthorized
 try:
     me = client.get_me()
-    if not me or not me.
+    if not me or not me.data:
         raise Exception("Не удалось получить данные аккаунта. Проверь ключи и разрешения в X Developer Portal.")
     bot_id = me.data.id
     print(f"🤖 Bot ID: {bot_id}")
@@ -232,9 +232,9 @@ def repost_trusted_content():
     query = f"({media_part}) OR ({people_part}) (bitcoin OR ethereum OR crypto OR halving OR ETF OR defi OR market)"
     try:
         tweets = client.search_recent_tweets(query=query, max_results=10)
-        if not tweets or not tweets.
+        if not tweets or not tweets.data:
             return
-        for tweet in tweets.
+        for tweet in tweets.data:
             if tweet.id in processed_trusted_tweets or "RT @" in tweet.text or len(tweet.text) < 30:
                 continue
             try:
@@ -266,7 +266,7 @@ def engage_with_mentions():
     global processed_mentions
     try:
         mentions = client.get_users_mentions(id=bot_id, max_results=5)
-        if not mentions or not mentions.
+        if not mentions or not mentions.data:
             return
         for mention in reversed(mentions.data):
             if mention.id in processed_mentions or mention.author_id == bot_id:
