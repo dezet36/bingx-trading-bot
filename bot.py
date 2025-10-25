@@ -19,7 +19,7 @@ client = tweepy.Client(
     wait_on_rate_limit=True
 )
 
-# 🔒 Защита от ошибки 401 при запуске
+# 🔒 Защита от 401 Unauthorized
 try:
     me = client.get_me()
     if not me or not me.data:
@@ -49,7 +49,7 @@ if use_gemini:
 else:
     print("⚠️ GEMINI_API_KEY не задан")
 
-# === RSS-ленты (без лишних пробелов) ===
+# === RSS FEEDS (без пробелов) ===
 RSS_FEEDS = [
     "https://www.coindesk.com/arc/outboundfeeds/rss/",
     "https://cointelegraph.com/rss",
@@ -67,7 +67,7 @@ RSS_FEEDS = [
     "https://www.coindesk.com/policy/feed/"
 ]
 
-# === Доверенные аккаунты ===
+# === Trusted accounts ===
 MEDIA_ACCOUNTS = ["coindesk", "cointelegraph", "decrypt", "bitcoinmagazine", "blockworks", "bingx_official"]
 PEOPLE_ACCOUNTS = ["VitalikButerin", "cz_binance", "saylor", "RaoulGMI", "lindaxie", "cobie", "peter_szilagyi", "hasufl", "LynAldenContact", "CryptoRand"]
 
@@ -75,7 +75,7 @@ processed_mentions = set()
 processed_trusted_tweets = set()
 
 # ======================
-# ПАРСИНГ RSS БЕЗ FEEDPARSER
+# ПАРСИНГ RSS
 # ======================
 
 def parse_rss_feed(url):
@@ -93,27 +93,27 @@ def parse_rss_feed(url):
             items.append({"title": title, "link": link})
         return items
     except Exception as e:
-        print(f"⚠️ Ошибка парсинга RSS {url}: {e}")
+        print(f"⚠️ RSS parse error for {url}: {e}")
         return []
 
 def get_latest_crypto_news():
-    print("🔍 Ищу свежие новости...")
+    print("🔍 Trying to get news...")
     random.shuffle(RSS_FEEDS)
     for url in RSS_FEEDS:
-        print(f"📡 Парсинг: {url}...")
+        print(f"📡 Parsing {url}...")
         items = parse_rss_feed(url)
         if items:
-            print(f"✅ Новость найдена: {items[0]['title']}")
+            print(f"✅ Got news: {items[0]['title']}")
             return items[0]["title"], items[0]["link"]
-    print("❌ Новости не найдены, использую заглушку")
-    return "Следи за крипторынком", "https://cointelegraph.com"
+    print("❌ No news found, using fallback")
+    return "Stay updated on crypto markets", "https://cointelegraph.com"
 
 # ======================
 # ЗАГЛУШКА ДЛЯ АНАЛИЗА НАСТРОЕНИЙ
 # ======================
 
 def analyze_sentiment(kw="#bitcoin", cnt=15):
-    return random.choice(["бычье 🟢", "медвежье 🔴", "нейтральное ⚪"])
+    return random.choice(["bullish 🟢", "bearish 🔴", "neutral ⚪"])
 
 # ======================
 # ОСТАЛЬНЫЕ ФУНКЦИИ
@@ -124,7 +124,7 @@ def load_crypto_terms():
         with open("crypto_terms.json", "r", encoding="utf-8") as f:
             return json.load(f)
     except:
-        return [{"term": "Blockchain", "definition": "Децентрализованный реестр."}]
+        return [{"term": "Blockchain", "definition": "A decentralized ledger."}]
 
 def get_crypto_prices():
     try:
@@ -132,21 +132,19 @@ def get_crypto_prices():
         data = res.json()
         return f"BTC: ${data['bitcoin']['usd']:,} | ETH: ${data['ethereum']['usd']:,}"
     except:
-        return "Цены недоступны"
+        return "BTC & ETH prices unavailable"
 
 def should_reply_with_price(text):
     return any(kw in text.lower() for kw in ["price", "btc", "eth", "bitcoin", "ethereum"])
 
 def summarize_news(title, url):
-    if not use_gemini:
-        return f"{title[:100]}..." if len(title) > 100 else title
-    prompt = f"Профессиональный аналитик. Кратко перескажи в один твит (макс 120 символов): '{title}'. Источник: {url}"
+    if not use_gemini: return f"{title[:100]}..." if len(title) > 100 else title
+    prompt = f"Pro crypto analyst. Summarize in one tweet (max 120 chars): '{title}'. Source: {url}"
     try:
         res = gemini_model.generate_content(prompt)
         s = res.text.strip().replace("\n", " ")
         return s[:117] + "..." if len(s) > 120 else s
-    except:
-        return title[:100]
+    except: return title[:100]
 
 def generate_reply(text, username, author_id):
     text_lower = text.lower()
@@ -157,23 +155,56 @@ def generate_reply(text, username, author_id):
     negative_keywords = ["lost", "scam", "rip", "angry", "hate", "bad signal", "wrong", "dumped", "rekt", "sucks", "fuck", "wtf"]
     if any(kw in text_lower for kw in negative_keywords):
         replies = [
-            "Потерял, потому что игнорировал стоп-лосс? Это уровень новичка.",
-            "Твой R:R отрицательный, потому что дисциплины ноль.",
-            "Rekt? Ты торговал без преимущества. Это азарт, а не трейдинг.",
-            "Рынки не заботятся о твоём PnL. И я тоже.",
-            "Сработал стоп? Отлично. Теперь научишься уважать ликвидность."
+            "Lost because you ignored your stop-loss? Amateur hour.",
+            "Your R:R is negative because your discipline is zero.",
+            "Rekt? You traded without an edge. That’s gambling, not trading.",
+            "Markets don’t care about your PnL. Neither do I.",
+            "You got stopped out? Good. Now you’ll learn to respect liquidity grabs."
         ]
         reply = random.choice(replies) + ref_suffix
         return reply if len(reply) <= 280 else reply[:277] + "..."
 
-    # ... (остальные функции generate_reply без изменений — оставь как есть)
+    if any(kw in text_lower for kw in ["thank", "thx", "gracias", "cheers", "appreciate", "nice", "good call"]):
+        replies = [
+            "You’re welcome. Now go compound that PnL.",
+            "Don’t thank me — thank your discipline for following the setup.",
+            "Glad the R:R worked out. Now find the next A+ entry.",
+            "Thanks? Nah. Show me your closed PnL screenshot.",
+            "Appreciate the signal? Now appreciate your risk management."
+        ]
+        reply = random.choice(replies) + ref_suffix
+        return reply if len(reply) <= 280 else reply[:277] + "..."
+
+    if should_reply_with_price(text):
+        prices = get_crypto_prices()
+        replies = [
+            f"{prices}. Price is at key support. Your entry plan ready?",
+            f"{prices}. Volume drying up — expect volatility expansion.",
+            f"{prices}. Open interest rising — smart money loading.",
+            f"{prices}. Daily RSI oversold. Accumulation zone or trap?",
+            f"{prices}. Liquidity pool below at $66.5K. Watch for sweep."
+        ]
+        reply = random.choice(replies) + ref_suffix
+        return reply if len(reply) <= 280 else reply[:277] + "..."
+
+    beginner_keywords = ["how to start", "beginner", "new", "first time", "guide", "help", "where to buy"]
+    if any(kw in text_lower for kw in beginner_keywords):
+        replies = [
+            "Step 1: Learn price action. Step 2: Master risk management. Step 3: Trade small.",
+            "New? Good. Now learn: trading ≠ gambling. Start with 1% risk per trade.",
+            "Best exchange? The one with deep liquidity and low slippage. BingX has it.",
+            "Guide? 1. Study support/resistance 2. Define your R:R 3. Journal every trade.",
+            "Still asking? Your edge is zero. Go study candlestick patterns."
+        ]
+        reply = random.choice(replies) + ref_suffix
+        return reply if len(reply) <= 280 else reply[:277] + "..."
 
     general_replies = [
-        "Ты здесь, чтобы торговать или смотреть, как другие богатеют?",
-        "Анализируешь графики или исполняешь сетапы? Выбирай быстро.",
-        "Бесплатные сигналы. Ноль затрат. Всё, что нужно — дисциплина и 1% риска.",
-        "95% трейдеров терпят неудачу, потому что у них нет преимущества. Ты из 5%?",
-        "ИИ не спит. Рынки не закрываются. Какой у тебя план?"
+        "You’re either here to trade or watch others get rich. Which one?",
+        "Scrolling charts or executing setups? Choose fast.",
+        "Free signals. Zero cost. All you need is discipline and 1% risk.",
+        "95% of traders fail because they lack edge. You look like the 5%.",
+        "AI doesn’t sleep. Markets don’t close. What’s your trading plan?"
     ]
     final_reply = random.choice(general_replies) + ref_suffix
     if len(final_reply) > 280:
@@ -190,21 +221,20 @@ def should_retweet(text):
 def post_crypto_term():
     terms = load_crypto_terms()
     term_data = random.choice(terms)
-    tweet = f"📚 Термин дня:\n\n**{term_data['term']}** — {term_data['definition']}\n\nНачни торговать на BingX с бонусом 👉 {os.getenv('REFERRAL_LINK', 'https://www.bingx.com')}"
-    if len(tweet) > 280:
-        tweet = tweet[:277] + "..."
+    tweet = f"📚 Crypto Term of the Day:\n\n**{term_data['term']}** — {term_data['definition']}\n\nStart trading on BingX with bonus 👉 {os.getenv('REFERRAL_LINK', 'https://www.bingx.com')}"
+    if len(tweet) > 280: tweet = tweet[:277] + "..."
     try:
         client.create_tweet(text=tweet)
-        print("📖 Термин опубликован")
+        print("📖 Term posted")
     except Exception as e:
-        print(f"❌ Ошибка публикации термина: {e}")
+        print(f"❌ Term error: {e}")
 
 def repost_trusted_content():
     media_part = " OR ".join([f"from:{acc}" for acc in MEDIA_ACCOUNTS])
     people_part = " OR ".join([f"from:{acc}" for acc in PEOPLE_ACCOUNTS])
-    query = f"({media_part}) OR ({people_part}) (bitcoin OR ethereum OR crypto)"
+    query = f"({media_part}) OR ({people_part}) (bitcoin OR ethereum OR crypto OR halving OR ETF OR defi OR market)"
     try:
-        tweets = client.search_recent_tweets(query=query, max_results=20)
+        tweets = client.search_recent_tweets(query=query, max_results=10)
         if not tweets or not tweets.data:
             return
         for tweet in tweets.data:
@@ -212,18 +242,33 @@ def repost_trusted_content():
                 continue
             try:
                 client.retweet(tweet.id)
-                print(f"🔁 Репост: {tweet.text[:50]}...")
+                print(f"🔁 Reposted: {tweet.text[:50]}...")
                 processed_trusted_tweets.add(tweet.id)
             except Exception as e:
-                print(f"⚠️ Ошибка репоста: {e}")
+                print(f"⚠️ Repost error: {e}")
                 processed_trusted_tweets.add(tweet.id)
     except Exception as e:
-        print(f"❌ Ошибка поиска для репоста: {e}")
+        print(f"❌ Repost error: {e}")
+
+def post_analytical_tweet():
+    print("🔄 post_analytical_tweet() called")
+    try:
+        title, url = get_latest_crypto_news()
+        sentiment = analyze_sentiment()
+        summary = summarize_news(title, url)
+        ref = os.getenv("REFERRAL_LINK", "https://www.bingx.com")
+        tweet = f"🤖 AI Crypto Pulse\n\nMarket sentiment: {sentiment}\n📰 {summary}\n{url}\n\nStart trading on BingX with bonus 👉 {ref}"
+        if len(tweet) > 280: tweet = tweet[:277] + "..."
+        print(f"📤 Tweet content: {tweet[:100]}...")
+        client.create_tweet(text=tweet)
+        print("✅ Analytical tweet posted")
+    except Exception as e:
+        print(f"❌ Tweet error: {e}")
 
 def engage_with_mentions():
     global processed_mentions
     try:
-        mentions = client.get_users_mentions(id=bot_id, max_results=20)
+        mentions = client.get_users_mentions(id=bot_id, max_results=10)
         if not mentions or not mentions.data:
             return
         for mention in reversed(mentions.data):
@@ -236,38 +281,28 @@ def engage_with_mentions():
                 author = client.get_user(id=mention.author_id)
                 reply_text = generate_reply(mention.text, author.data.username, mention.author_id)
                 client.create_tweet(text=reply_text, in_reply_to_tweet_id=mention.id)
-                print(f"💬 Ответил @{author.data.username}")
+                print(f"💬 Replied to @{author.data.username}")
             except Exception as e:
-                print(f"⚠️ Ошибка ответа: {e}")
+                print(f"⚠️ Reply error: {e}")
             processed_mentions.add(mention.id)
     except Exception as e:
-        print(f"❌ Ошибка обработки упоминаний: {e}")
-
-def post_analytical_tweet():
-    print("🔄 Публикация аналитического твита...")
-    try:
-        title, url = get_latest_crypto_news()
-        sentiment = analyze_sentiment()
-        summary = summarize_news(title, url)
-        ref = os.getenv("REFERRAL_LINK", "https://www.bingx.com")
-        tweet = f"🤖 ИИ-пульс рынка\n\nНастроение: {sentiment}\n📰 {summary}\n{url}\n\nНачни торговать на BingX с бонусом 👉 {ref}"
-        if len(tweet) > 280:
-            tweet = tweet[:277] + "..."
-        client.create_tweet(text=tweet)
-        print("✅ Аналитический твит опубликован")
-    except Exception as e:
-        print(f"❌ Ошибка публикации: {e}")
+        print(f"❌ Mention error: {e}")
 
 # ======================
 # ЗАПУСК
 # ======================
 
 if __name__ == "__main__":
-    print("🚀 Запуск BingX Trading Bot...")
-    post_analytical_tweet()  # первая публикация
-    schedule.every(3).hours.do(post_analytical_tweet)
-    schedule.every(30).minutes.do(repost_trusted_content)
-    schedule.every(5).minutes.do(engage_with_mentions)
+    print("🚀 Starting BingX Trading Bot (Stable Edition)...")
+    print("🔄 Running first tweet...")
+    post_analytical_tweet()
+    print("🔄 Setting up schedule...")
+
+    # Уменьшены частоты, чтобы избежать rate limit
+    schedule.every(4).hours.do(post_analytical_tweet)
+    schedule.every().day.at("10:00").do(post_crypto_term)
+    schedule.every(2).hours.do(repost_trusted_content)
+    schedule.every(15).minutes.do(engage_with_mentions)
 
     while True:
         schedule.run_pending()
