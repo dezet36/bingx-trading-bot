@@ -19,8 +19,16 @@ client = tweepy.Client(
     wait_on_rate_limit=True
 )
 
-bot_id = client.get_me().data.id
-print(f"🤖 Bot ID: {bot_id}")
+# Защита от 401 Unauthorized при запуске
+try:
+    me = client.get_me()
+    if not me or not me.
+        raise Exception("Failed to fetch bot profile. Check permissions and tokens.")
+    bot_id = me.data.id
+    print(f"🤖 Bot ID: {bot_id}")
+except Exception as e:
+    print(f"❌ Authorization failed: {e}")
+    exit(1)
 
 # === Gemini AI ===
 gemini_api_key = os.getenv("GEMINI_API_KEY")
@@ -41,7 +49,7 @@ if use_gemini:
 else:
     print("⚠️ No GEMINI_API_KEY")
 
-# === RSS FEEDS (без 403/404) ===
+# === RSS FEEDS (без лишних пробелов) ===
 RSS_FEEDS = [
     "https://www.coindesk.com/arc/outboundfeeds/rss/",
     "https://cointelegraph.com/rss",
@@ -101,11 +109,10 @@ def get_latest_crypto_news():
     return "Stay updated on crypto markets", "https://cointelegraph.com"
 
 # ======================
-# ЗАГЛУШКА ДЛЯ АНАЛИЗА НАСТРОЕНИЙ (БЕЗ PYTORCH)
+# ЗАГЛУШКА ДЛЯ АНАЛИЗА НАСТРОЕНИЙ
 # ======================
 
 def analyze_sentiment(kw="#bitcoin", cnt=15):
-    # Просто возвращаем случайное настроение без ML
     return random.choice(["bullish 🟢", "bearish 🔴", "neutral ⚪"])
 
 # ======================
@@ -222,7 +229,7 @@ def should_retweet(text):
     return any(kw in text.lower() for kw in ["thank", "useful", "great", "accurate"])
 
 # ======================
-# ФУНКЦИИ ПУБЛИКАЦИИ (с обработкой лимитов)
+# ФУНКЦИИ ПУБЛИКАЦИИ
 # ======================
 
 def post_crypto_term():
@@ -240,8 +247,8 @@ def repost_trusted_content():
     query = f"({media_part}) OR ({people_part}) (bitcoin OR ethereum OR crypto OR halving OR ETF OR defi OR market)"
     try:
         tweets = client.search_recent_tweets(query=query, max_results=20)
-        if not tweets or not tweets.data: return
-        for tweet in tweets.data:
+        if not tweets or not tweets. return
+        for tweet in tweets.
             if tweet.id in processed_trusted_tweets or "RT @" in tweet.text or len(tweet.text) < 30: continue
             try:
                 client.retweet(tweet.id)
@@ -287,7 +294,7 @@ def engage_with_mentions():
     global processed_mentions
     try:
         mentions = client.get_users_mentions(id=bot_id, max_results=20)
-        if not mentions or not mentions.data: return
+        if not mentions or not mentions. return
         for mention in reversed(mentions.data):
             if mention.id in processed_mentions or mention.author_id == bot_id: continue
             try:
@@ -317,7 +324,7 @@ def post_analytical_tweet():
         ref = os.getenv("REFERRAL_LINK", "https://www.bingx.com")
         tweet = f"🤖 AI Crypto Pulse\n\nMarket sentiment: {sentiment}\n📰 {summary}\n{url}\n\nStart trading on BingX with bonus 👉 {ref}"
         if len(tweet) > 280: tweet = tweet[:277] + "..."
-        print(f"📤 Tweet content: {tweet[:100]}...")  # первые 100 символов
+        print(f"📤 Tweet content: {tweet[:100]}...")
         client.create_tweet(text=tweet)
         print("✅ Analytical tweet posted")
     except tweepy.TooManyRequests:
@@ -332,7 +339,7 @@ def post_analytical_tweet():
 if __name__ == "__main__":
     print("🚀 Starting BingX Trading Bot (Stable Edition)...")
     print("🔄 Running first tweet...")
-    post_analytical_tweet()  # первая публикация сразу
+    post_analytical_tweet()
     print("🔄 Setting up schedule...")
     schedule.every(3).hours.do(post_analytical_tweet)
     schedule.every().day.at("09:00").do(post_thread)
@@ -341,6 +348,5 @@ if __name__ == "__main__":
     schedule.every(5).minutes.do(engage_with_mentions)
 
     while True:
-        print("⏰ Running scheduled tasks...")
         schedule.run_pending()
         time.sleep(30)
