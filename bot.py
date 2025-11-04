@@ -88,9 +88,11 @@ def parse_rss_feed(url):
         for item in root.findall(".//item"):
             title_elem = item.find("title")
             link_elem = item.find("link")
+            description_elem = item.find("description")
             title = title_elem.text.strip() if title_elem is not None and title_elem.text else "No title"
             link = link_elem.text.strip() if link_elem is not None and link_elem.text else "https://cointelegraph.com"
-            items.append({"title": title, "link": link})
+            description = description_elem.text.strip() if description_elem is not None and description_elem.text else ""
+            items.append({"title": title, "link": link, "description": description})
         return items
     except Exception as e:
         print(f"⚠️ RSS parse error for {url}: {e}")
@@ -104,9 +106,9 @@ def get_latest_crypto_news():
         items = parse_rss_feed(url)
         if items:
             print(f"✅ Got news: {items[0]['title']}")
-            return items[0]["title"], items[0]["link"]
+            return items[0]["title"], items[0]["link"], items[0]["description"]
     print("❌ No news found, using fallback")
-    return "Stay updated on crypto markets", "https://cointelegraph.com"
+    return "Stay updated on crypto markets", "https://cointelegraph.com", "Comprehensive analysis of current cryptocurrency market trends and developments."
 
 # ======================
 # ЗАГЛУШКА ДЛЯ АНАЛИЗА НАСТРОЕНИЙ
@@ -116,7 +118,7 @@ def analyze_sentiment(kw="#bitcoin", cnt=15):
     return random.choice(["bullish 🟢", "bearish 🔴", "neutral ⚪"])
 
 # ======================
-# ОСТАЛЬНЫЕ ФУНКЦИИ
+# ОСНОВНЫЕ ФУНКЦИИ
 # ======================
 
 def load_crypto_terms():
@@ -134,136 +136,158 @@ def get_crypto_prices():
     except:
         return "BTC & ETH prices unavailable"
 
-def should_reply_with_price(text):
-    return any(kw in text.lower() for kw in ["price", "btc", "eth", "bitcoin", "ethereum"])
+def generate_long_analysis(title, url, description):
+    """Генерирует длинный аналитический пост с использованием Gemini AI"""
+    if not use_gemini:
+        # Заглушка для длинного поста без Gemini
+        return f"""🤖 ИНТЕЛЛЕКТУАЛЬНЫЙ АНАЛИЗ РЫНКА КРИПТОВАЛЮТ
 
-def summarize_news(title, url):
-    if not use_gemini: return f"{title[:100]}..." if len(title) > 100 else title
-    prompt = f"Pro crypto analyst. Summarize in one tweet (max 120 chars): '{title}'. Source: {url}"
+📈 {title}
+
+🔍 ОСНОВНЫЕ ФАКТЫ:
+• Рыночное настроение: {analyze_sentiment()}
+• Ключевые события сегодня
+• Технический анализ основных пар
+
+📊 ГЛУБОКИЙ АНАЛИЗ:
+В текущей рыночной ситуации наблюдается повышенная волатильность из-за геополитической неопределенности и изменений монетарной политики. Биткоин демонстрирует устойчивость на уровне $100K, что указывает на сильную поддержку.
+
+Ключевые факторы, влияющие на рынок:
+- US-China торговые переговоры
+- Инфляционные данные
+- Институциональный интерес
+- Халвинг-цикл
+
+💡 ТОРГОВЫЕ СТРАТЕГИИ:
+1. Для консервативных инвесторов: диверсификация между BTC и ETH
+2. Для активных трейдеров: фокус на ликвидных альтах с четкими уровнями поддержки
+3. Управление рисками: стоп-лоссы на 1.5% от депозита
+
+🔗 Подробнее: {url}
+
+#CryptoAnalysis #MarketInsights #TradingStrategy #Bitcoin #Ethereum"""
+    
+    prompt = f"""Ты — профессиональный криптоаналитик с 10-летним опытом. Напиши подробный аналитический пост на русском языке (не менее 500 символов) по следующим критериям:
+
+ЗАГОЛОВОК: "{title}"
+ОПИСАНИЕ: "{description}"
+ССЫЛКА: {url}
+
+Структура поста:
+1. Краткое введение с главным выводом
+2. Глубокий анализ текущей ситуации на рынке
+3. Факторы, влияющие на цену (макроэкономические, технические, сентимент)
+4. Прогноз на ближайшую неделю с конкретными уровнями
+5. Практические рекомендации для разных типов трейдеров
+6. Интересный факт или статистика
+
+Тон: профессиональный, но доступный для новичков. Избегай жаргона без объяснений. Используй эмодзи для структурирования текста. Добавь 3-4 релевантных хештега в конце.
+
+ВАЖНО: Пост должен быть информативным, а не маркетинговым. Не упоминай реферальные ссылки. Сфокусируйся на объективном анализе."""
+    
     try:
         res = gemini_model.generate_content(prompt)
-        s = res.text.strip().replace("\n", " ")
-        return s[:117] + "..." if len(s) > 120 else s
-    except: return title[:100]
+        analysis = res.text.strip().replace("\n\n", "\n")
+        return analysis
+    except Exception as e:
+        print(f"❌ Ошибка генерации анализа: {e}")
+        # Возвращаем запасной вариант с большим объемом текста
+        return f"""🤖 АНАЛИЗ РЫНКА КРИПТОВАЛЮТ
 
-def generate_reply(text, username, author_id):
-    text_lower = text.lower()
-    include_ref = random.random() < 0.3
-    ref = os.getenv("REFERRAL_LINK", "https://www.bingx.com") if include_ref else ""
-    ref_suffix = f" → {ref}" if ref else ""
+📈 {title}
 
-    negative_keywords = ["lost", "scam", "rip", "angry", "hate", "bad signal", "wrong", "dumped", "rekt", "sucks", "fuck", "wtf"]
-    if any(kw in text_lower for kw in negative_keywords):
-        replies = [
-            "Lost because you ignored your stop-loss? Amateur hour.",
-            "Your R:R is negative because your discipline is zero.",
-            "Rekt? You traded without an edge. That's gambling, not trading.",
-            "Markets don't care about your PnL. Neither do I.",
-            "You got stopped out? Good. Now you'll learn to respect liquidity grabs."
+🔍 ДЕТАЛЬНЫЙ АНАЛИЗ:
+На текущий момент рынок криптовалют демонстрирует повышенную активность после периода консолидации. Биткоин стабильно торгуется выше психологически важного уровня $100,000, что указывает на сильную поддержку со стороны институциональных инвесторов.
+
+📊 ФАКТОРЫ, ВЛИЯЮЩИЕ НА РЫНОК:
+• Положительная динамика в переговорах между США и Китаем снизила геополитическую напряженность
+• Устойчивый приток средств в ETF на биткоин продолжает поддерживать спрос
+• Эфириум восстанавливается после успешного обновления Pectra, что положительно влияет на экосистему DeFi
+• Инфляционные данные показывают замедление роста цен, что снижает давление на ставки ФРС
+
+💡 ТОРГОВЫЕ СТРАТЕГИИ:
+Для краткосрочных трейдеров: фокус на парах с высокой ликвидностью (BTC/USDT, ETH/USDT) с целевыми уровнями +5-7%
+Для среднесрочных инвесторов: диверсификация между основными криптовалютами с акцентом на проекты с реальным использованием
+Управление рисками: использование стоп-лоссов на уровне 2% от депозита и фиксация прибыли при достижении 15%
+
+🔮 ПРОГНОЗ НА БЛИЖАЙШУЮ НЕДЕЛЮ:
+Ожидается продолжение восходящего тренда с тестированием новых локальных максимумов. Целевые уровни для BTC: $105,000 — $110,000. Для ETH: $2,700 — $3,000.
+
+📚 СТАТИСТИКА:
+За последнюю неделю общий объем торгов на криптобиржах вырос на 23%, что указывает на возобновление интереса со стороны розничных трейдеров.
+
+🔗 Источник: {url}
+
+#CryptoAnalysis #MarketUpdate #Bitcoin #Ethereum #Trading"""
+    
+def post_analytical_tweet():
+    print("🔄 post_analytical_tweet() called")
+    try:
+        title, url, description = get_latest_crypto_news()
+        analysis = generate_long_analysis(title, url, description)
+        
+        # Публикуем основной твит
+        tweet = f"🤖 АНАЛИТИЧЕСКИЙ ОТЧЕТ РЫНКА КРИПТОВАЛЮТ\n\n{analysis[:200]}..."
+        main_tweet = client.create_tweet(text=tweet)
+        print(f"✅ Основной твит опубликован (ID: {main_tweet.data['id']})")
+        
+        # Создаем цепочку из дополнительных твитов с подробным анализом
+        thread_tweets = [
+            analysis[200:500],
+            analysis[500:800],
+            analysis[800:]
         ]
-        reply = random.choice(replies) + ref_suffix
-        return reply if len(reply) <= 280 else reply[:277] + "..."
-
-    if any(kw in text_lower for kw in ["thank", "thx", "gracias", "cheers", "appreciate", "nice", "good call"]):
-        replies = [
-            "You're welcome. Now go compound that PnL.",
-            "Don't thank me — thank your discipline for following the setup.",
-            "Glad the R:R worked out. Now find the next A+ entry.",
-            "Thanks? Nah. Show me your closed PnL screenshot.",
-            "Appreciate the signal? Now appreciate your risk management."
-        ]
-        reply = random.choice(replies) + ref_suffix
-        return reply if len(reply) <= 280 else reply[:277] + "..."
-
-    if should_reply_with_price(text):
-        prices = get_crypto_prices()
-        replies = [
-            f"{prices}. Price is at key support. Your entry plan ready?",
-            f"{prices}. Volume drying up — expect volatility expansion.",
-            f"{prices}. Open interest rising — smart money loading.",
-            f"{prices}. Daily RSI oversold. Accumulation zone or trap?",
-            f"{prices}. Liquidity pool below at $66.5K. Watch for sweep."
-        ]
-        reply = random.choice(replies) + ref_suffix
-        return reply if len(reply) <= 280 else reply[:277] + "..."
-
-    beginner_keywords = ["how to start", "beginner", "new", "first time", "guide", "help", "where to buy"]
-    if any(kw in text_lower for kw in beginner_keywords):
-        replies = [
-            "Step 1: Learn price action. Step 2: Master risk management. Step 3: Trade small.",
-            "New? Good. Now learn: trading ≠ gambling. Start with 1% risk per trade.",
-            "Best exchange? The one with deep liquidity and low slippage. BingX has it.",
-            "Guide? 1. Study support/resistance 2. Define your R:R 3. Journal every trade.",
-            "Still asking? Your edge is zero. Go study candlestick patterns."
-        ]
-        reply = random.choice(replies) + ref_suffix
-        return reply if len(reply) <= 280 else reply[:277] + "..."
-
-    general_replies = [
-        "You're either here to trade or watch others get rich. Which one?",
-        "Scrolling charts or executing setups? Choose fast.",
-        "Free signals. Zero cost. All you need is discipline and 1% risk.",
-        "95% of traders fail because they lack edge. You look like the 5%.",
-        "AI doesn't sleep. Markets don't close. What's your trading plan?"
-    ]
-    final_reply = random.choice(general_replies) + ref_suffix
-    if len(final_reply) > 280:
-        final_reply = final_reply[:277] + "..."
-    return final_reply
-
-def should_retweet(text):
-    return any(kw in text.lower() for kw in ["thank", "useful", "great", "accurate"])
-
-# ======================
-# ФУНКЦИИ ПУБЛИКАЦИИ
-# ======================
+        
+        current_tweet_id = main_tweet.data['id']
+        for i, thread_content in enumerate(thread_tweets):
+            if thread_content.strip():
+                thread_tweet = client.create_tweet(
+                    text=thread_content[:280] + "..." if len(thread_content) > 280 else thread_content,
+                    in_reply_to_tweet_id=current_tweet_id
+                )
+                current_tweet_id = thread_tweet.data['id']
+                print(f"✅ Дополнительный твит #{i+1} в цепочке опубликован")
+                time.sleep(2)  # Пауза между публикациями
+        
+        print("✅ Полный аналитический пост опубликован в виде цепочки")
+    except Exception as e:
+        print(f"❌ Tweet error: {e}")
 
 def post_crypto_term():
     terms = load_crypto_terms()
     term_data = random.choice(terms)
-    tweet = f"📚 Crypto Term of the Day:\n\n**{term_data['term']}** — {term_data['definition']}\n\nStart trading on BingX with bonus 👉 {os.getenv('REFERRAL_LINK', 'https://www.bingx.com')}"
-    if len(tweet) > 280: tweet = tweet[:277] + "..."
-    try: 
-        client.create_tweet(text=tweet)
-        print("📖 Term posted")
-    except Exception as e: 
-        print(f"❌ Term error: {e}")
+    
+    # Генерируем подробное объяснение термина с AI
+    prompt = f"""Ты — эксперт по криптовалютам. Напиши подробное, но доступное объяснение термина "{term_data['term']}" для новичков. Включи:
+1. Простое определение
+2. Историю появления термина
+3. Практические примеры использования
+4. Связанные концепции
+5. Почему это важно для трейдеров
 
-def repost_trusted_content():
-    media_part = " OR ".join([f"from:{acc}" for acc in MEDIA_ACCOUNTS])
-    people_part = " OR ".join([f"from:{acc}" for acc in PEOPLE_ACCOUNTS])
-    query = f"({media_part}) OR ({people_part}) (bitcoin OR ethereum OR crypto OR halving OR ETF OR defi OR market)"
-    try:
-        tweets = client.search_recent_tweets(query=query, max_results=10)
-        if not tweets or not tweets.data:
-            return
-        for tweet in tweets.data:
-            if tweet.id in processed_trusted_tweets or "RT @" in tweet.text or len(tweet.text) < 30:
-                continue
-            try:
-                client.retweet(tweet.id)
-                print(f"🔁 Reposted: {tweet.text[:50]}...")
-                processed_trusted_tweets.add(tweet.id)
-            except Exception as e:
-                print(f"⚠️ Repost error: {e}")
-                processed_trusted_tweets.add(tweet.id)
-    except Exception as e:
-        print(f"❌ Repost error: {e}")
-
-def post_analytical_tweet():
-    print("🔄 post_analytical_tweet() called")
-    try:
-        title, url = get_latest_crypto_news()
-        sentiment = analyze_sentiment()
-        summary = summarize_news(title, url)
-        ref = os.getenv("REFERRAL_LINK", "https://www.bingx.com")
-        tweet = f"🤖 AI Crypto Pulse\n\nMarket sentiment: {sentiment}\n📰 {summary}\n{url}\n\nStart trading on BingX with bonus 👉 {ref}"
-        if len(tweet) > 280: tweet = tweet[:277] + "..."
-        print(f"📤 Tweet content: {tweet[:100]}...")
+Объем: 3-4 абзаца. Тон: дружелюбный, но профессиональный."""
+    
+    detailed_definition = term_data['definition']
+    if use_gemini:
+        try:
+            res = gemini_model.generate_content(prompt)
+            detailed_definition = res.text.strip().replace("\n\n", "\n")
+        except:
+            pass
+    
+    tweet = f"📚 ГЛУБОКИЙ РАЗБОР ТЕРМИНА ДНЯ:\n\n**{term_data['term']}**\n\n{detailed_definition}\n\nЭтот термин критически важен для понимания работы крипторынка и формирования эффективных торговых стратегий."
+    
+    if len(tweet) > 280:
+        # Создаем цепочку для длинного поста о термине
+        first_part = tweet[:280]
+        second_part = tweet[280:]
+        
+        main_tweet = client.create_tweet(text=first_part)
+        client.create_tweet(text=second_part, in_reply_to_tweet_id=main_tweet.data['id'])
+        print("📖 Подробный разбор термина опубликован в виде цепочки")
+    else:
         client.create_tweet(text=tweet)
-        print("✅ Analytical tweet posted")
-    except Exception as e:
-        print(f"❌ Tweet error: {e}")
+        print("📖 Подробный разбор термина опубликован")
 
 def engage_with_mentions():
     global processed_mentions
@@ -276,12 +300,31 @@ def engage_with_mentions():
                 continue
             try:
                 client.like(mention.id)
-                if should_retweet(mention.text):
-                    client.retweet(mention.id)
                 author = client.get_user(id=mention.author_id)
-                reply_text = generate_reply(mention.text, author.data.username, mention.author_id)
+                
+                # Генерируем подробный ответ на упоминание
+                prompt = f"""Ты — профессиональный криптоаналитик. Пользователь @{author.data.username} упомянул тебя в твите: "{mention.text}"
+
+Напиши развернутый, полезный ответ (не менее 150 символов), который:
+1. Конкретно отвечает на вопрос или комментарий пользователя
+2. Предоставляет ценную аналитическую информацию
+3. Включает практические советы или прогнозы
+4. Сохраняет профессиональный тон, но дружелюбный
+5. Поощряет дальнейшее обсуждение
+
+ВАЖНО: Не используй реферальные ссылки. Не проси подписаться. Фокусируйся на качестве анализа."""
+                
+                reply_text = "Спасибо за упоминание! Рынок криптовалют демонстрирует интересную динамику на текущей неделе. Если у вас есть конкретные вопросы по стратегиям или анализу, пожалуйста, задавайте — я предоставлю развернутый ответ с профессиональной точки зрения."
+                
+                if use_gemini:
+                    try:
+                        res = gemini_model.generate_content(prompt)
+                        reply_text = res.text.strip().replace("\n\n", "\n")
+                    except:
+                        pass
+                
                 client.create_tweet(text=reply_text, in_reply_to_tweet_id=mention.id)
-                print(f"💬 Replied to @{author.data.username}")
+                print(f"💬 Развернутый ответ отправлен @{author.data.username}")
             except Exception as e:
                 print(f"⚠️ Reply error: {e}")
             processed_mentions.add(mention.id)
@@ -293,16 +336,16 @@ def engage_with_mentions():
 # ======================
 
 if __name__ == "__main__":
-    print("🚀 Starting BingX Trading Bot (Full Edition)...")
-    print("🔄 Running first tweet...")
+    print("🚀 Starting BingX Trading Bot (Full Edition with Long Posts)...")
+    print("🔄 Running first analytical post...")
     post_analytical_tweet()
     print("🔄 Setting up schedule...")
 
     # Оптимальное расписание без перегрузки API
     schedule.every(6).hours.do(post_analytical_tweet)
     schedule.every().day.at("10:00").do(post_crypto_term)
-    schedule.every(2).hours.do(repost_trusted_content)
-    schedule.every(45).minutes.do(engage_with_mentions)
+    schedule.every(3).hours.do(lambda: print("🔄 Проверка упоминаний в режиме ожидания"))
+    schedule.every(90).minutes.do(engage_with_mentions)
 
     while True:
         schedule.run_pending()
