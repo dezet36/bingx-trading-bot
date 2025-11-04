@@ -8,24 +8,8 @@ import google.generativeai as genai
 import requests
 from dotenv import load_dotenv
 from threading import Thread
-from flask import Flask
 
 load_dotenv()
-
-# === HTTP-СЕРВЕР ДЛЯ RAILWAY ===
-app = Flask(__name__)
-
-@app.route('/')
-def home():
-    return f"✅ BingX Trading Bot активен! Последняя публикация: {getattr(app, 'last_post', 'никогда')}"
-
-def run_flask():
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
-
-# Запускаем Flask в отдельном потоке
-flask_thread = Thread(target=run_flask, daemon=True)
-flask_thread.start()
-print("🌐 HTTP-сервер запущен для Railway")
 
 # === Twitter API ===
 client = tweepy.Client(
@@ -75,10 +59,8 @@ RSS_FEEDS = [
     "https://news.bitcoin.com/feed/",
     "https://beincrypto.com/feed/",
     "https://thedefiant.io/rss/",
-    "https://blockworks.co/news/feed/",
     "https://glassnode.com/feed.xml",
     "https://santiment.net/blog/feed/",
-    "https://nftnow.com/feed/",
     "https://nftevening.com/feed/"
 ]
 
@@ -280,8 +262,6 @@ def post_analytical_tweet():
         print(f"📤 Tweet content: {tweet[:100]}...")
         client.create_tweet(text=tweet)
         print("✅ Analytical tweet posted")
-        # Сохраняем время последней публикации для HTTP-сервера
-        app.last_post = time.strftime("%Y-%m-%d %H:%M:%S")
     except Exception as e:
         print(f"❌ Tweet error: {e}")
 
@@ -313,7 +293,7 @@ def engage_with_mentions():
 # ======================
 
 if __name__ == "__main__":
-    print("🚀 Starting BingX Trading Bot (Full Edition with HTTP Server)...")
+    print("🚀 Starting BingX Trading Bot (Full Edition)...")
     print("🔄 Running first tweet...")
     post_analytical_tweet()
     print("🔄 Setting up schedule...")
@@ -321,13 +301,9 @@ if __name__ == "__main__":
     # Оптимальное расписание без перегрузки API
     schedule.every(6).hours.do(post_analytical_tweet)
     schedule.every().day.at("10:00").do(post_crypto_term)
-    schedule.every(4).hours.do(repost_trusted_content)
+    schedule.every(2).hours.do(repost_trusted_content)
     schedule.every(45).minutes.do(engage_with_mentions)
 
-    print("✅ Bot successfully started with HTTP server")
-    print("ℹ️  For Railway compatibility, a web server is running on port 8080")
-    
-    # Основной цикл запускается в фоновом режиме
     while True:
         schedule.run_pending()
         time.sleep(30)
