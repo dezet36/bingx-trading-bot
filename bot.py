@@ -49,22 +49,20 @@ if use_gemini:
 else:
     print("⚠️ GEMINI_API_KEY не задан")
 
-# === RSS FEEDS (без пробелов) ===
+# === RSS FEEDS (только рабочие) ===
 RSS_FEEDS = [
     "https://www.coindesk.com/arc/outboundfeeds/rss/",
     "https://cointelegraph.com/rss",
     "https://decrypt.co/feed",
     "https://cryptobriefing.com/feed/",
     "https://news.bitcoin.com/feed/",
-    "https://bitcoinmagazine.com/.rss/full/",
     "https://beincrypto.com/feed/",
     "https://thedefiant.io/rss/",
     "https://blockworks.co/news/feed/",
     "https://glassnode.com/feed.xml",
     "https://santiment.net/blog/feed/",
     "https://nftnow.com/feed/",
-    "https://nftevening.com/feed/",
-    "https://www.coindesk.com/policy/feed/"
+    "https://nftevening.com/feed/"
 ]
 
 # === Trusted accounts ===
@@ -157,17 +155,17 @@ def generate_reply(text, username, author_id):
         replies = [
             "Lost because you ignored your stop-loss? Amateur hour.",
             "Your R:R is negative because your discipline is zero.",
-            "Rekt? You traded without an edge. That’s gambling, not trading.",
-            "Markets don’t care about your PnL. Neither do I.",
-            "You got stopped out? Good. Now you’ll learn to respect liquidity grabs."
+            "Rekt? You traded without an edge. That's gambling, not trading.",
+            "Markets don't care about your PnL. Neither do I.",
+            "You got stopped out? Good. Now you'll learn to respect liquidity grabs."
         ]
         reply = random.choice(replies) + ref_suffix
         return reply if len(reply) <= 280 else reply[:277] + "..."
 
     if any(kw in text_lower for kw in ["thank", "thx", "gracias", "cheers", "appreciate", "nice", "good call"]):
         replies = [
-            "You’re welcome. Now go compound that PnL.",
-            "Don’t thank me — thank your discipline for following the setup.",
+            "You're welcome. Now go compound that PnL.",
+            "Don't thank me — thank your discipline for following the setup.",
             "Glad the R:R worked out. Now find the next A+ entry.",
             "Thanks? Nah. Show me your closed PnL screenshot.",
             "Appreciate the signal? Now appreciate your risk management."
@@ -200,11 +198,11 @@ def generate_reply(text, username, author_id):
         return reply if len(reply) <= 280 else reply[:277] + "..."
 
     general_replies = [
-        "You’re either here to trade or watch others get rich. Which one?",
+        "You're either here to trade or watch others get rich. Which one?",
         "Scrolling charts or executing setups? Choose fast.",
         "Free signals. Zero cost. All you need is discipline and 1% risk.",
         "95% of traders fail because they lack edge. You look like the 5%.",
-        "AI doesn’t sleep. Markets don’t close. What’s your trading plan?"
+        "AI doesn't sleep. Markets don't close. What's your trading plan?"
     ]
     final_reply = random.choice(general_replies) + ref_suffix
     if len(final_reply) > 280:
@@ -223,8 +221,11 @@ def post_crypto_term():
     term_data = random.choice(terms)
     tweet = f"📚 Crypto Term of the Day:\n\n**{term_data['term']}** — {term_data['definition']}\n\nStart trading on BingX with bonus 👉 {os.getenv('REFERRAL_LINK', 'https://www.bingx.com')}"
     if len(tweet) > 280: tweet = tweet[:277] + "..."
-    try: client.create_tweet(text=tweet); print("📖 Term posted")
-    except Exception as e: print(f"❌ Term error: {e}")
+    try: 
+        client.create_tweet(text=tweet)
+        print("📖 Term posted")
+    except Exception as e: 
+        print(f"❌ Term error: {e}")
 
 def repost_trusted_content():
     media_part = " OR ".join([f"from:{acc}" for acc in MEDIA_ACCOUNTS])
@@ -273,7 +274,7 @@ def engage_with_mentions():
                 continue
             try:
                 client.like(mention.id)
-                if should_retweet(mention.text):
+                if should_retweet(mention.text): 
                     client.retweet(mention.id)
                 author = client.get_user(id=mention.author_id)
                 reply_text = generate_reply(mention.text, author.data.username, mention.author_id)
@@ -290,16 +291,16 @@ def engage_with_mentions():
 # ======================
 
 if __name__ == "__main__":
-    print("🚀 Starting BingX Trading Bot (Stable Edition)...")
+    print("🚀 Starting BingX Trading Bot (Full Edition)...")
     print("🔄 Running first tweet...")
     post_analytical_tweet()
     print("🔄 Setting up schedule...")
 
-    # Уменьшены частоты, чтобы избежать rate limit
-    schedule.every(4).hours.do(post_analytical_tweet)
-    schedule.every().day.at("10:00").do(post_crypto_term)
-    schedule.every(2).hours.do(repost_trusted_content)   # ← было 30 минут
-    schedule.every(30).minutes.do(engage_with_mentions)  # ← было 5 минут
+    # Оптимальное расписание для избежания rate limits
+    schedule.every(6).hours.do(post_analytical_tweet)      # Аналитика каждые 6 часов
+    schedule.every().day.at("09:00").do(post_crypto_term)  # Термины в 9 утра
+    schedule.every(4).hours.do(repost_trusted_content)     # Репосты каждые 4 часа
+    schedule.every(45).minutes.do(engage_with_mentions)    # Ответы на упоминания каждые 45 минут
 
     while True:
         schedule.run_pending()
