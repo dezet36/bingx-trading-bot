@@ -7,8 +7,25 @@ import tweepy
 import google.generativeai as genai
 import requests
 from dotenv import load_dotenv
+from threading import Thread
+from flask import Flask
 
 load_dotenv()
+
+# === HTTP-СЕРВЕР ДЛЯ RAILWAY ===
+app = Flask(__name__)
+
+@app.route('/')
+def home():
+    return f"✅ BingX Trading Bot активен! Последняя публикация: {getattr(app, 'last_post', 'никогда')}"
+
+def run_flask():
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+
+# Запускаем Flask в отдельном потоке
+flask_thread = Thread(target=run_flask, daemon=True)
+flask_thread.start()
+print("🌐 HTTP-сервер запущен для Railway")
 
 # === Twitter API ===
 client = tweepy.Client(
@@ -78,7 +95,10 @@ processed_trusted_tweets = set()
 
 def parse_rss_feed(url):
     try:
-        response = requests.get(url, timeout=10)
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(url, headers=headers, timeout=15)
         response.raise_for_status()
         from xml.etree import ElementTree as ET
         root = ET.fromstring(response.content)
@@ -260,6 +280,8 @@ def post_analytical_tweet():
         print(f"📤 Tweet content: {tweet[:100]}...")
         client.create_tweet(text=tweet)
         print("✅ Analytical tweet posted")
+        # Сохраняем время последней публикации для HTTP-сервера
+        app.last_post = time.strftime("%Y-%m-%d %H:%M:%S")
     except Exception as e:
         print(f"❌ Tweet error: {e}")
 
@@ -274,7 +296,7 @@ def engage_with_mentions():
                 continue
             try:
                 client.like(mention.id)
-                if should_retweet(mention.text): 
+                if should_retweet(mention.text):
                     client.retweet(mention.id)
                 author = client.get_user(id=mention.author_id)
                 reply_text = generate_reply(mention.text, author.data.username, mention.author_id)
@@ -291,17 +313,21 @@ def engage_with_mentions():
 # ======================
 
 if __name__ == "__main__":
-    print("🚀 Starting BingX Trading Bot (Full Edition)...")
+    print("🚀 Starting BingX Trading Bot (Full Edition with HTTP Server)...")
     print("🔄 Running first tweet...")
     post_analytical_tweet()
     print("🔄 Setting up schedule...")
 
-    # Оптимальное расписание для избежания rate limits
-    schedule.every(6).hours.do(post_analytical_tweet)      # Аналитика каждые 6 часов
-    schedule.every().day.at("09:00").do(post_crypto_term)  # Термины в 9 утра
-    schedule.every(4).hours.do(repost_trusted_content)     # Репосты каждые 4 часа
-    schedule.every(45).minutes.do(engage_with_mentions)    # Ответы на упоминания каждые 45 минут
+    # Оптимальное расписание без перегрузки API
+    schedule.every(6).hours.do(post_analytical_tweet)
+    schedule.every().day.at("10:00").do(post_crypto_term)
+    schedule.every(4).hours.do(repost_trusted_content)
+    schedule.every(45).minutes.do(engage_with_mentions)
 
+    print("✅ Bot successfully started with HTTP server")
+    print("ℹ️  For Railway compatibility, a web server is running on port 8080")
+    
+    # Основной цикл запускается в фоновом режиме
     while True:
         schedule.run_pending()
         time.sleep(30)
